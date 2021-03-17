@@ -32,6 +32,8 @@ void button_handler(void *params);
 
 uint8_t button_status_flag = NOT_PRESSED;
 
+void EXTI15_10_IRQHandler(void);
+
 int main(void)
 {
 
@@ -77,6 +79,8 @@ void led_task_handler(void *params){
 
 void button_handler(void *params){
 
+	//Toggle the button status flag
+	button_status_flag ^= 1;
 
 }
 
@@ -88,6 +92,14 @@ static void prvSetupHardware(void){
 	//Setup UART
 	prvSetupUart();
 
+}
+
+void EXTI15_10_IRQHandler(void){
+
+	//1.Clear the interrupt pending bit
+	EXTI_ClearITPendingBit(EXTI_Line13);
+
+	button_handler(NULL);
 }
 
 static void prvSetupGPIO(void){
@@ -118,7 +130,7 @@ static void prvSetupGPIO(void){
 
 	//Interrupt configuration for button(PC13)
 	//1. System configuration for EXTI line
-	SYSCFG_EXTILineConfig(GPIOC, EXTI_PinSource13);
+	SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOC, EXTI_PinSource13);
 
 	//2. EXTI line configuration
 	EXTI_InitTypeDef exti_init;
